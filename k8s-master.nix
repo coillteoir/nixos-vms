@@ -9,7 +9,7 @@ with lib; let
   kubeMasterAPIServerPort = 6443;
 in {
   imports = [
-    <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
+    <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix>
   ];
 
   config = {
@@ -24,23 +24,25 @@ in {
     boot.loader.grub.device = "/dev/vda";
     boot.loader.timeout = 0;
 
+    virtualisation.cores = 2;
+    virtualisation.graphics = false;
+    virtualisation.memorySize = 4096;
+
     users.extraUsers.root.password = "a";
 
     environment.systemPackages = with pkgs; [
       kompose
       kubectl
       kubernetes
+      vim
     ];
+
     networking.extraHosts = "${kubeMasterIP} ${kubeMasterHostname}";
+    networking.hostName = "kooberneets";
+
     services.kubernetes = {
       roles = ["master" "node"];
       masterAddress = kubeMasterHostname;
-      apiserverAddress = "https://${kubeMasterHostname}:${toString kubeMasterAPIServerPort}";
-      easyCerts = true;
-      apiserver = {
-        securePort = kubeMasterAPIServerPort;
-        advertiseAddress = kubeMasterIP;
-      };
     };
   };
 }
