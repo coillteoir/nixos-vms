@@ -40,6 +40,15 @@ in {
     networking.extraHosts = "${kubeMasterIP} ${kubeMasterHostname}";
     networking.hostName = "kooberneets";
 
+    systemd.services.onStartup = {
+      description = "init script for master node";
+      script = ''
+        mkdir -p /root/.kube
+        ln -s /etc/kubernetes/cluster-admin.kubeconfig /root/.kube/config
+      '';
+      wantedBy = ["multi-user.target"];
+    };
+
     services.kubernetes = {
       roles = ["master" "node"];
       masterAddress = kubeMasterHostname;
